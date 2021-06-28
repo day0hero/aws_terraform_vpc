@@ -19,20 +19,38 @@ resource "aws_subnet" "private_subnet" {
     {
       "Name" = format("${var.cluster_name}-private-%s", 
       element(var.azs, count.index)),
-      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     },
     var.default_tags,
   )
 }
+
+resource "aws_eip" "ngw_eip" {
+  vpc        = true
+  depends_on = [aws_internet_gateway.igw]
+}
+
+resource "aws_nat_gateway" "ngw" {
+  allocation_id = aws_eip.ngw_eip.id
+  subnet_id     = aws_subnet.public-subnet[0].id
+  depends_on     = [aws_internet_gateway.igw]
+  tags = {
+    Name = "${var.cluster_name}-ngw"
+  }
+}
+
 resource "aws_route_table" "private_route_table" {
-  vpc_id =  aws_vpc.cluster_vpc.id
-  tags =  merge(
-  {
-    "Name" = "${var.cluster_name}-private_net_rtbl",
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
-  },
-  var.default_tags,
+  vpc_id     = aws_vpc.cluster_vpc.id
+  depends_on = [aws_nat_gateway.ngw]
+  tags = merge(
+    {
+      "Name"                                      = "${var.cluster_name}-private_net_rtbl",
+    },
+    var.default_tags,
   )
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.ngw.id
+  }
 }
 
 resource "aws_route_table_association" "private_net_route_table_assoc" {
@@ -69,14 +87,13 @@ resource "aws_route_table" "public-route-table" {
   tags = merge(
     {
       "Name"                                      = "${var.cluster_name}-public-rtbl",
-      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     },
     var.default_tags,
   )
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.inet-gateway.id
+    gateway_id = aws_internet_gateway.igw.id
   }
 }
 
@@ -85,13 +102,12 @@ resource "aws_route_table_association" "public_route_table_assoc" {
   route_table_id = aws_route_table.public-route-table.id
 }
 
-resource "aws_internet_gateway" "inet-gateway" {
+resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.cluster_vpc.id
 
   tags = merge(
     {
       "Name"                                      = "${var.cluster_name}-public-inet-gw",
-      "kubernetes.io/cluster/${var.cluster_name}" = "owned"
     },
     var.default_tags,
   )
@@ -124,7 +140,6 @@ EOF
   tags =  merge(
   {
     "Name"  = format("${var.cluster_name}-pri-s3-vpce"),
-    "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   },
   var.default_tags,
   )
