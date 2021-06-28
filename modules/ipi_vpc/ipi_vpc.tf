@@ -107,7 +107,7 @@ resource "aws_internet_gateway" "igw" {
 
   tags = merge(
     {
-      "Name"                                      = "${var.cluster_name}-public-inet-gw",
+      "Name"                                      = "${var.cluster_name}-public-igw",
     },
     var.default_tags,
   )
