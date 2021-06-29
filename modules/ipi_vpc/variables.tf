@@ -1,5 +1,5 @@
 variable "region" {
-  type = string
+  type    = string
   default = "us-gov-west-1"
 }
 variable "vpc_cidr" {
@@ -87,4 +87,42 @@ locals {
     "${local.vpc_cidr_ab}.${local.public_subnet_cidrs + index(local.azs, az)}.0/24"
     if index(local.azs, az) < local.max_public_subnets
   ]
+}
+
+
+#Bastion Node Variable Definition
+variable "bastion_ami_id" {
+  description = "Provide the ami-id to use for the bastion node (RHEL8.3)"
+  type        = string
+  default     = "ami-0ac4e06a69870e5be"
+}
+
+variable "bastion_instance_type" {
+  description = "Define the size of the bastion"
+  type        = string
+  default     = "t3.large"
+}
+
+variable "bastion_public_ssh_key_name" {
+  description = "Provide the name of the ssh key to use"
+  type        = string
+  default     = ""
+}
+
+variable "bastion_volume_size" {
+  description = "Provide the desired size of the root volume"
+  type        = string
+  default     = "80"
+}
+
+variable "bastion_ssh_user" {
+  description = "Provide the username to ssh to instance with"
+  type        = string
+  default     = "ec2-user"
+}
+
+variable "ssh_private_key_path" {
+  description = "Path to private key to login to ec2"
+  type = string
+  default = ""
 }
