@@ -280,7 +280,8 @@ resource "aws_vpc_endpoint" "elasticloadbalancing" {
 }
 
 resource "aws_security_group" "bastion_sg" {
-  name = "${var.cluster_name}-bastion-sg"
+  name   = "${var.cluster_name}-bastion-sg"
+  vpc_id = aws_vpc.cluster_vpc.id
 
   tags = {
     Name = "${var.cluster_name}-bastion-sg"
@@ -327,6 +328,7 @@ resource "aws_instance" "bastion" {
   ami                         = var.bastion_ami_id
   instance_type               = var.bastion_instance_type
   associate_public_ip_address = true
+  subnet_id                   = aws_subnet.public-subnet[0].id
 
   tags = {
     Name = "${var.cluster_name}-bastion"
@@ -346,6 +348,7 @@ resource "aws_instance" "bastion" {
       "curl -LfO http://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.7/openshift-client-linux.tar.gz",
       "sudo tar xvf openshift-install-linux.tar.gz -C /usr/local/bin",
       "sudo tar xvf openshift-client-linux.tar.gz -C /usr/local/bin",
+      "rm -rf ~/openshift-*",
       "sudo dnf install -y podman git vim",
       "sudo dnf update -y"
     ]
