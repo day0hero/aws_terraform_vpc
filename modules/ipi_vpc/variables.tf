@@ -123,6 +123,6 @@ variable "bastion_ssh_user" {
 
 variable "ssh_private_key_path" {
   description = "Path to private key to login to ec2"
-  type = string
-  default = ""
+  type        = string
+  default     = ""
 }
