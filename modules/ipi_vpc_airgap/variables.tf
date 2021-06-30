@@ -72,7 +72,7 @@ locals {
   private_subnet_cidrs = 0
   max_private_subnets  = 3
   public_subnet_cidrs  = 3
-  max_public_subnets   = 1
+  max_public_subnets   = 3
   azs                  = data.aws_availability_zones.available.names
 }
 
