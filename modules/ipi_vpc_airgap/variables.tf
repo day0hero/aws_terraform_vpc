@@ -153,7 +153,7 @@ variable "ssh_user" {
   default     = "ec2-user"
 }
 
-variable "public_ssh_key_name" {
+variable "ssh_key_name" {
   description = "Provide the name of the ssh key to use"
   type        = string
   default     = ""
