@@ -514,7 +514,7 @@ resource "aws_instance" "registry" {
   ami                         = var.registry_ami_id
   instance_type               = var.registry_instance_type
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.private-subnet[0].id
+  subnet_id                   = aws_subnet.private_subnet[0].id
 
   tags = {
     Name = "${var.cluster_name}-registry"
