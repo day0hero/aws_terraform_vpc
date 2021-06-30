@@ -510,7 +510,7 @@ resource "aws_security_group_rule" "registry_egress" {
 }
 
 // Registry instance creation 
-resource "aws_instance" "proxy" {
+resource "aws_instance" "registry" {
   ami                         = var.registry_ami_id
   instance_type               = var.registry_instance_type
   associate_public_ip_address = true
