@@ -43,7 +43,7 @@ resource "aws_route_table" "private_route_table" {
   depends_on = [aws_nat_gateway.ngw]
   tags = merge(
     {
-      "Name"                                      = "${var.cluster_name}-private_net_rtbl",
+      "Name" = "${var.cluster_name}-private_net_rtbl",
     },
     var.default_tags,
   )
@@ -86,7 +86,7 @@ resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.cluster_vpc.id
   tags = merge(
     {
-      "Name"                                      = "${var.cluster_name}-public-rtbl",
+      "Name" = "${var.cluster_name}-public-rtbl",
     },
     var.default_tags,
   )
@@ -107,7 +107,7 @@ resource "aws_internet_gateway" "igw" {
 
   tags = merge(
     {
-      "Name"                                      = "${var.cluster_name}-public-inet-gw",
+      "Name" = "${var.cluster_name}-public-inet-gw",
     },
     var.default_tags,
   )
@@ -139,7 +139,7 @@ EOF
 
   tags = merge(
     {
-      "Name"                                      = format("${var.cluster_name}-pri-s3-vpce"),
+      "Name" = format("${var.cluster_name}-pri-s3-vpce"),
     },
     var.default_tags,
   )
