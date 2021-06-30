@@ -341,7 +341,7 @@ resource "aws_instance" "bastion" {
     Name = "${var.cluster_name}-bastion"
   }
 
-  key_name               = var.public_ssh_key_name
+  key_name               = var.ssh_key_name
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
   root_block_device {
@@ -363,7 +363,7 @@ resource "aws_instance" "bastion" {
     connection {
       type        = "ssh"
       user        = var.bastion_ssh_user
-      private_key = file(var.ssh_private_key_path)
+      private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
   }
@@ -438,7 +438,7 @@ resource "aws_instance" "proxy" {
     Name = "${var.cluster_name}-proxy"
   }
 
-  key_name               = var.public_ssh_key_name
+  key_name               = var.ssh_key_name
   vpc_security_group_ids = [aws_security_group.proxy_sg.id]
 
   root_block_device {
@@ -461,7 +461,7 @@ resource "aws_instance" "proxy" {
     connection {
       type        = "ssh"
       user        = var.ssh_user
-      private_key = file(var.ssh_private_key_path)
+      private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
   }
@@ -520,7 +520,7 @@ resource "aws_instance" "registry" {
     Name = "${var.cluster_name}-registry"
   }
 
-  key_name               = var.public_ssh_key_name
+  key_name               = var.ssh_key_name
   vpc_security_group_ids = [aws_security_group.registry_sg.id]
 
   root_block_device {
