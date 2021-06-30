@@ -111,7 +111,7 @@ variable "bastion_volume_size" {
 // Proxy Node variable Definition
 variable "proxy_ami_id" {
   description = "Provide the ami-id to use for the proxy node: default is (RHEL8.3)"
-    type        = string
+  type        = string
   default     = "ami-0ac4e06a69870e5be"
 }
 
@@ -130,7 +130,7 @@ variable "proxy_volume_size" {
 // Registry Node variable Definition
 variable "registry_ami_id" {
   description = "Provide the ami-id to use for the registry node: default is (RHEL8.3)"
-    type        = string
+  type        = string
   default     = "ami-0ac4e06a69870e5be"
 }
 
