@@ -13,7 +13,7 @@ rm -rf ~/openshift-*
 
 echo "Install some core packages and run yum update"
 sudo dnf install -y podman git vim tmux
-sudo dnf update -y
+sudo dnf update -y --security
 
 echo "Create deployment scaffolding"
 mkdir ~/{backup,deployment}

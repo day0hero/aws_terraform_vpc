@@ -1,36 +1,42 @@
-#!/bin/bash -xe
-# Redirect the user-data output to the console logs
-exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+#!/bin/bash
 
 # Apply the latest security patches
-yum update -y --security
-
-# Disable source / destination check. It cannot be disabled from the launch configuration
-#region=${AWS::Region}
-#instanceid=`curl -s http://169.254.169.254/latest/meta-data/instance-id`
-#aws ec2 modify-instance-attribute --no-source-dest-check --instance-id $instanceid --region $region
+dnf update -y --security
 
 # Install and start Squid
-yum install -y squid
-systemctl enable --now squid
+dnf install -y squid firewalld vim policycoreutils-python-utils
+systemctl enable --now firewalld
 sleep 5
-iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3129
-iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
+
+# Enable firewalld redirects
+firewall-cmd --add-forward-port=port=80:proto=tcp:toport=3129
+firewall-cmd --add-forward-port=port=443:proto=tcp:toport=3130
+firewall-cmd --runtime-to-permanent
 
 cp -a /etc/squid /etc/squid_orig
 
+# Create cache directories, set perms and contexts
+mkdir /var/spool/squid
+mkdir /var/cache/squid
+semanage fcontext -a -t squid_cache_t "/var/spool/squid(/.*)?"
+restorecon -FRvv /var/spool/squid
+chown -R squid:squid /var/spool/squid
+chown -R squid:squid /var/cache/squid
+
 # Create a SSL certificate for the SslBump Squid module
 mkdir /etc/squid/ssl
-pushd /etc/squid/ssl
-openssl genrsa -out squid.key 4096
-openssl req -new -key squid.key -out squid.csr -subj "/C=US/ST=VA/L=squid/O=squid/CN=squid"
-openssl x509 -req -days 3650 -in squid.csr -signkey squid.key -out squid.crt
-cat squid.key squid.crt >> squid.pem
+openssl genrsa -out /etc/squid/ssl/squid.key 4096
+openssl req -new -key /etc/squid/ssl/squid.key -out /etc/squid/ssl/squid.csr -subj "/C=US/ST=VA/L=squid/O=squid/CN=squid"
+openssl x509 -req -days 3650 -in /etc/squid/ssl/squid.csr -signkey /etc/squid/ssl/squid.key -out /etc/squid/ssl/squid.crt
+cat /etc/squid/ssl/squid.key /etc/squid/ssl/squid.crt >> /etc/squid/ssl/squid.pem
+
+chmod 600 /etc/squid/ssl/squid.pem
+restorecon -FRvv /etc/squid/ssl/squid.pem
 
 echo '.amazonaws.com' > /etc/squid/whitelist.txt
 echo '.cloudfront.net' >> /etc/squid/whitelist.txt
 
-cat > /etc/squid/squid.conf << 'EOF'
+cat > /etc/squid/squid.conf << EOF
 
 visible_hostname squid
 cache deny all
@@ -68,8 +74,12 @@ ssl_bump splice step3 allowed_https_sites
 ssl_bump terminate step2 all
 
 http_access deny all
-
-
 EOF
 
 /usr/sbin/squid -k parse && /usr/sbin/squid -k reconfigure
+
+#/usr/lib64/squid/security_file_certgen -c -s /var/cache/squid/ssl_db -M 4MB
+/usr/lib64/squid/security_file_certgen -c -s /var/spool/squid/ssl_db -M 4MB
+
+# Start and enable squid
+systemctl enable --now squid
