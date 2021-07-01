@@ -56,7 +56,7 @@ variable "public_subnets" {
   type    = list(string)
   default = []
 }
-#Availability Zone Variables
+//Availability Zone Variables
 variable "azs" {
   type    = list(string)
   default = []
@@ -66,7 +66,7 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-#Local Variable Definitions
+//Local Variable Definitions
 locals {
   vpc_cidr_ab          = "10.0"
   private_subnet_cidrs = 0
@@ -89,10 +89,9 @@ locals {
   ]
 }
 
-
-#Bastion Node Variable Definition
+// Bastion Node Variable Definition
 variable "bastion_ami_id" {
-  description = "Provide the ami-id to use for the bastion node (RHEL8.3)"
+  description = "Provide the ami-id to use for the bastion node: default is (RHEL8.3)"
   type        = string
   default     = "ami-0ac4e06a69870e5be"
 }
@@ -103,25 +102,64 @@ variable "bastion_instance_type" {
   default     = "t3.large"
 }
 
-variable "bastion_public_ssh_key_name" {
-  description = "Provide the name of the ssh key to use"
-  type        = string
-  default     = ""
-}
-
 variable "bastion_volume_size" {
   description = "Provide the desired size of the root volume"
   type        = string
   default     = "80"
 }
 
-variable "bastion_ssh_user" {
+// Proxy Node variable Definition
+variable "proxy_ami_id" {
+  description = "Provide the ami-id to use for the proxy node: default is (RHEL8.3)"
+  type        = string
+  default     = "ami-0ac4e06a69870e5be"
+}
+
+variable "proxy_instance_type" {
+  description = "Define the size of the proxy"
+  type        = string
+  default     = "t3.large"
+}
+
+variable "proxy_volume_size" {
+  description = "Provide the desired size of the root volume"
+  type        = string
+  default     = "50"
+}
+
+// Registry Node variable Definition
+variable "registry_ami_id" {
+  description = "Provide the ami-id to use for the registry node: default is (RHEL8.3)"
+  type        = string
+  default     = "ami-0ac4e06a69870e5be"
+}
+
+variable "registry_instance_type" {
+  description = "Define the size of the registry"
+  type        = string
+  default     = "t3.large"
+}
+
+variable "registry_volume_size" {
+  description = "Provide the desired size of the root volume"
+  type        = string
+  default     = "50"
+}
+
+// SSH User configuration
+variable "ssh_user" {
   description = "Provide the username to ssh to instance with"
   type        = string
   default     = "ec2-user"
 }
 
-variable "ssh_private_key_path" {
+variable "ssh_key_name" {
+  description = "Provide the name of the ssh key to use"
+  type        = string
+  default     = ""
+}
+
+variable "private_ssh_key_path" {
   description = "Path to private key to login to ec2"
   type        = string
   default     = ""
