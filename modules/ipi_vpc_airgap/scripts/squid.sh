@@ -24,8 +24,7 @@ chown -R squid:squid /var/spool/squid
 chown -R squid:squid /var/cache/squid
 
 # SELinux Configuration: Add additional squid ports to selinux
-semanage port -m -t squid_port_t -p tcp 3129
-semanage port -m -t squid_port_t -p tcp 3130 
+semanage port -a -t squid_port_t -p tcp 3129-3130
 
 # Create a SSL certificate for the SslBump Squid module
 mkdir /etc/squid/ssl
