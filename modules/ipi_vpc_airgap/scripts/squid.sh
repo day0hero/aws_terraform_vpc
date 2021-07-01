@@ -15,13 +15,17 @@ firewall-cmd --runtime-to-permanent
 
 cp -a /etc/squid /etc/squid_orig
 
-# Create cache directories, set perms and contexts
+# Create cache directories, set perms and set contexts
 mkdir /var/spool/squid
 mkdir /var/cache/squid
 semanage fcontext -a -t squid_cache_t "/var/spool/squid(/.*)?"
 restorecon -FRvv /var/spool/squid
 chown -R squid:squid /var/spool/squid
 chown -R squid:squid /var/cache/squid
+
+# SELinux Configuration: Add additional squid ports to selinux
+semanage port -m -t squid_port_t -p tcp 3129
+semanage port -m -t squid_port_t -p tcp 3130 
 
 # Create a SSL certificate for the SslBump Squid module
 mkdir /etc/squid/ssl
@@ -35,6 +39,8 @@ restorecon -FRvv /etc/squid/ssl/squid.pem
 
 echo '.amazonaws.com' > /etc/squid/whitelist.txt
 echo '.cloudfront.net' >> /etc/squid/whitelist.txt
+# The following is for access to the RHUI repositories hosted in AWS.
+echo '.aws.ce.redhat.com' >> /etc/squid/whitelist.txt
 
 cat > /etc/squid/squid.conf << EOF
 

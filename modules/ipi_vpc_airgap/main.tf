@@ -470,7 +470,6 @@ resource "aws_instance" "proxy" {
 
 /*
 //     Registry Node
-//
 */
 
 // Registry Security Group and Rules
@@ -529,6 +528,24 @@ resource "aws_instance" "registry" {
     volume_size           = var.registry_volume_size
     volume_type           = "standard"
   }
+  provisioner "file" {
+    source      = "scripts/registry.sh"
+    destination = "/home/ec2-user/registry.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /home/ec2-user/registry.sh",
+      "sudo /home/ec2-user/registry.sh",
+    ]
+  }
+    connection {
+      type        = "ssh"
+      user        = var.ssh_user
+      private_key = file(var.private_ssh_key_path)
+      host        = self.public_ip
+    }
+ }
 }
 
 // Terraform Outputs
