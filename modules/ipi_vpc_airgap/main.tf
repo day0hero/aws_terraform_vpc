@@ -68,12 +68,14 @@ resource "aws_subnet" "public-subnet" {
 
 // Route Table and Association - Public Subnets
 resource "aws_route_table_association" "route_net" {
+  depends_on = [aws_internet_gateway.igw]
   count          = length(local.azs)
   route_table_id = aws_route_table.public-route-table.id
   subnet_id      = aws_subnet.public-subnet[count.index].id
 }
 
 resource "aws_route_table" "public-route-table" {
+  depends_on = [aws_internet_gateway.igw]
   vpc_id = aws_vpc.cluster_vpc.id
   tags = merge(
     {
@@ -89,6 +91,7 @@ resource "aws_route_table" "public-route-table" {
 }
 
 resource "aws_route_table_association" "public_route_table_assoc" {
+  depends_on = [aws_internet_gateway.igw]
   subnet_id      = aws_subnet.public-subnet[0].id
   route_table_id = aws_route_table.public-route-table.id
 }
@@ -351,22 +354,21 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "./scripts/bastion_config.bash"
+    source      = "scripts/bastion_config.bash"
     destination = "~/bastion_config.bash"
   }
   provisioner "remote-exec" {
     inline = [
       "chmod +x ~/bastion_config.bash",
-      "sudo ./bastion_config.bash"
+      "sudo ~/bastion_config.bash",
     ]
-
+  }
     connection {
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
-  }
 }
 
 /*
@@ -448,24 +450,23 @@ resource "aws_instance" "proxy" {
   }
 
   provisioner "file" {
-    source      = "./scripts/squid.bash"
-    destination = "~/squid.bash"
+    source      = "scripts/squid.sh"
+    destination = "/home/ec2-user/squid.sh"
   }
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/squid.sh",
-      "sudo ./squid.sh"
+      "chmod +x /home/ec2-user/squid.sh",
+      "sudo /home/ec2-user/squid.sh",
     ]
-
+  }
     connection {
       type        = "ssh"
       user        = var.ssh_user
       private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
-  }
-}
+ }
 
 /*
 //     Registry Node
@@ -513,7 +514,7 @@ resource "aws_security_group_rule" "registry_egress" {
 resource "aws_instance" "registry" {
   ami                         = var.registry_ami_id
   instance_type               = var.registry_instance_type
-  associate_public_ip_address = true
+  associate_public_ip_address = false
   subnet_id                   = aws_subnet.private_subnet[0].id
 
   tags = {
