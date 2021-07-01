@@ -338,25 +338,22 @@ resource "aws_instance" "bastion" {
     volume_type           = "standard"
   }
 
+  provisioner "file" {
+    source      = "scripts/bastion_config.bash"
+    destination = "/home/ec2-user/bastion_config.bash"
+  }
   provisioner "remote-exec" {
     inline = [
-      "curl -LfO http://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.7/openshift-install-linux.tar.gz",
-      "curl -LfO http://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest-4.7/openshift-client-linux.tar.gz",
-      "sudo tar xvf openshift-install-linux.tar.gz -C /usr/local/bin",
-      "sudo tar xvf openshift-client-linux.tar.gz -C /usr/local/bin",
-      "rm -rf ~/openshift-*",
-      "mkdir -p ~/.aws",
-      "sudo dnf install -y podman git vim tmux",
-      "sudo dnf update -y"
+      "chmod +x /home/ec2-user/bastion_config.bash",
+      "sudo /home/ec2-user/bastion_config.bash",
     ]
-
+  }
     connection {
       type        = "ssh"
-      user        = var.bastion_ssh_user
-      private_key = file(var.ssh_private_key_path)
+      user        = var.ssh_user
+      private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
-  }
 }
 output "bastion_public_ip" {
   value = aws_instance.bastion.public_ip
