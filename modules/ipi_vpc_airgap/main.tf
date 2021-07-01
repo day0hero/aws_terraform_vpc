@@ -354,13 +354,13 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "scripts/bastion_config.bash"
-    destination = "~/bastion_config.bash"
+    source      = "${file("${path.module}/scripts/bastion_config.sh")}"
+    destination = "~/bastion_config.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/bastion_config.bash",
-      "sudo ~/bastion_config.bash",
+      "chmod +x ~/bastion_config.sh",
+      "sudo ~/bastion_config.sh",
     ]
   }
     connection {
@@ -450,7 +450,7 @@ resource "aws_instance" "proxy" {
   }
 
   provisioner "file" {
-    source      = "scripts/squid.sh"
+    source      = "${file("${path.module}/scripts/squid.sh")}"
     destination = "/home/ec2-user/squid.sh"
   }
 
@@ -529,7 +529,7 @@ resource "aws_instance" "registry" {
     volume_type           = "standard"
   }
   provisioner "file" {
-    source      = "scripts/registry.sh"
+    source      = "${file("${path.module}/scripts/registry.sh")}"
     destination = "/home/ec2-user/registry.sh"
   }
 
@@ -545,7 +545,6 @@ resource "aws_instance" "registry" {
       private_key = file(var.private_ssh_key_path)
       host        = self.public_ip
     }
- }
 }
 
 // Terraform Outputs
