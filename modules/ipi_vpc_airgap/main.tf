@@ -68,7 +68,7 @@ resource "aws_subnet" "public-subnet" {
 
 // Route Table and Association - Public Subnets
 resource "aws_route_table_association" "route_net" {
-  depends_on = [aws_internet_gateway.igw]
+  depends_on     = [aws_internet_gateway.igw]
   count          = length(local.azs)
   route_table_id = aws_route_table.public-route-table.id
   subnet_id      = aws_subnet.public-subnet[count.index].id
@@ -76,7 +76,7 @@ resource "aws_route_table_association" "route_net" {
 
 resource "aws_route_table" "public-route-table" {
   depends_on = [aws_internet_gateway.igw]
-  vpc_id = aws_vpc.cluster_vpc.id
+  vpc_id     = aws_vpc.cluster_vpc.id
   tags = merge(
     {
       "Name" = "${var.cluster_name}-public-rtbl",
@@ -91,7 +91,7 @@ resource "aws_route_table" "public-route-table" {
 }
 
 resource "aws_route_table_association" "public_route_table_assoc" {
-  depends_on = [aws_internet_gateway.igw]
+  depends_on     = [aws_internet_gateway.igw]
   subnet_id      = aws_subnet.public-subnet[0].id
   route_table_id = aws_route_table.public-route-table.id
 }
@@ -354,21 +354,21 @@ resource "aws_instance" "bastion" {
   }
 
   provisioner "file" {
-    source      = "${file("${path.module}/scripts/bastion_config.sh")}"
-    destination = "~/bastion_config.sh"
+    source      = "${path.module}/scripts/bastion.sh"
+    destination = "/home/ec2-user/bastion.sh"
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/bastion_config.sh",
-      "sudo ~/bastion_config.sh",
+      "chmod +x /home/ec2-user/bastion.sh",
+      "sudo /home/ec2-user/bastion.sh",
     ]
   }
-    connection {
-      type        = "ssh"
-      user        = var.ssh_user
-      private_key = file(var.private_ssh_key_path)
-      host        = self.public_ip
-    }
+  connection {
+    type        = "ssh"
+    user        = var.ssh_user
+    private_key = file(var.private_ssh_key_path)
+    host        = self.public_ip
+  }
 }
 
 /*
@@ -402,13 +402,13 @@ resource "aws_security_group_rule" "proxy_ingress_22" {
   to_port           = 22
 }
 
-resource "aws_security_group_rule" "proxy_ingress_3130" {
+resource "aws_security_group_rule" "proxy_ingress_80" {
   security_group_id = aws_security_group.proxy_sg.id
   type              = "ingress"
   cidr_blocks       = [aws_vpc.cluster_vpc.cidr_block]
   protocol          = "tcp"
-  from_port         = 3130
-  to_port           = 3130
+  from_port         = 80
+  to_port           = 80
 }
 
 resource "aws_security_group_rule" "proxy_ingress_443" {
@@ -450,7 +450,7 @@ resource "aws_instance" "proxy" {
   }
 
   provisioner "file" {
-    source      = "${file("${path.module}/scripts/squid.sh")}"
+    source      = "${path.module}/scripts/squid.sh"
     destination = "/home/ec2-user/squid.sh"
   }
 
@@ -460,13 +460,13 @@ resource "aws_instance" "proxy" {
       "sudo /home/ec2-user/squid.sh",
     ]
   }
-    connection {
-      type        = "ssh"
-      user        = var.ssh_user
-      private_key = file(var.private_ssh_key_path)
-      host        = self.public_ip
-    }
- }
+  connection {
+    type        = "ssh"
+    user        = var.ssh_user
+    private_key = file(var.private_ssh_key_path)
+    host        = self.public_ip
+  }
+}
 
 /*
 //     Registry Node
@@ -528,23 +528,6 @@ resource "aws_instance" "registry" {
     volume_size           = var.registry_volume_size
     volume_type           = "standard"
   }
-  provisioner "file" {
-    source      = "${file("${path.module}/scripts/registry.sh")}"
-    destination = "/home/ec2-user/registry.sh"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /home/ec2-user/registry.sh",
-      "sudo /home/ec2-user/registry.sh",
-    ]
-  }
-    connection {
-      type        = "ssh"
-      user        = var.ssh_user
-      private_key = file(var.private_ssh_key_path)
-      host        = self.public_ip
-    }
 }
 
 // Terraform Outputs
