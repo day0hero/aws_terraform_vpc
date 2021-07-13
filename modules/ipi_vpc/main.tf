@@ -176,7 +176,7 @@ resource "aws_security_group_rule" "private_ec2_ingress" {
   to_port   = 443
   protocol  = "tcp"
   cidr_blocks = [
-    "aws_vpc.cluster_vpc.cidr_block"
+    [aws_vpc.cluster_vpc.cidr_block]
   ]
 
   security_group_id = aws_security_group.private_ec2_api.id
@@ -237,7 +237,7 @@ resource "aws_security_group_rule" "private_elb_ingress" {
   to_port   = 443
   protocol  = "tcp"
   cidr_blocks = [
-    "aws_vpc.cluster_vpc.cidr_block"
+    [aws_vpc.cluster_vpc.cidr_block]
   ]
 
   security_group_id = aws_security_group.private_elb_api.id
@@ -329,7 +329,7 @@ resource "aws_instance" "bastion" {
     Name = "${var.cluster_name}-bastion"
   }
 
-  key_name               = var.bastion_public_ssh_key_name
+  key_name               = var.ssh_key_name
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
   root_block_device {
