@@ -11,12 +11,14 @@ sleep 5
 # Enable firewalld redirects
  firewall-cmd --add-forward-port=port=80:proto=tcp:toport=3129
  firewall-cmd --add-forward-port=port=443:proto=tcp:toport=3130
+ firewall-cmd --add-rich-rule='rule family=ipv4 forward-port port=80 protocol=tcp to-port=3129'--permanent
+ firewall-cmd --add-rich-rule='rule family=ipv4 forward-port port=443 protocol=tcp to-port=3130'--permanent
  firewall-cmd --add-port=443/tcp --permanent
  firewall-cmd --add-port=80/tcp --permanent
  firewall-cmd --runtime-to-permanent
 
-iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3129
-iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130       
+#iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3129
+#iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130       
 
 cp -a /etc/squid /etc/squid_orig
 
@@ -45,6 +47,7 @@ echo '.amazonaws.com' > /etc/squid/whitelist.txt
 echo '.cloudfront.net' >> /etc/squid/whitelist.txt
 # The following is for access to the RHUI repositories hosted in AWS.
 echo '.aws.ce.redhat.com' >> /etc/squid/whitelist.txt
+echo '.rhsm.redhat.com' >> /etc/squid/whitelist.txt
 
 cat > /etc/squid/squid.conf << EOF
 
