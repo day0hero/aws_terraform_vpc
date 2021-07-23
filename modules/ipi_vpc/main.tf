@@ -175,9 +175,7 @@ resource "aws_security_group_rule" "private_ec2_ingress" {
   from_port = 443
   to_port   = 443
   protocol  = "tcp"
-  cidr_blocks = [
-    [aws_vpc.cluster_vpc.cidr_block]
-  ]
+  cidr_blocks = [aws_vpc.cluster_vpc.cidr_block]
 
   security_group_id = aws_security_group.private_ec2_api.id
 }
@@ -236,9 +234,7 @@ resource "aws_security_group_rule" "private_elb_ingress" {
   from_port = 443
   to_port   = 443
   protocol  = "tcp"
-  cidr_blocks = [
-    [aws_vpc.cluster_vpc.cidr_block]
-  ]
+  cidr_blocks = [aws_vpc.cluster_vpc.cidr_block]
 
   security_group_id = aws_security_group.private_elb_api.id
 }
