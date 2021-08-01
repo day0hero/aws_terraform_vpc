@@ -270,6 +270,12 @@ resource "aws_vpc_endpoint" "elasticloadbalancing" {
   )
 }
 
+locals {
+  vars = {
+    AWS_REGION = "${var.region}"
+  }
+}
+
 resource "aws_security_group" "bastion_sg" {
   name   = "${var.cluster_name}-bastion-sg"
   vpc_id = aws_vpc.cluster_vpc.id
@@ -326,6 +332,8 @@ resource "aws_instance" "bastion" {
   }
 
   key_name               = var.ssh_key_name
+  user_data              = templatefile("$(path.module)/scripts/bastion.sh", local.vars)
+
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
   root_block_device {
@@ -333,24 +341,8 @@ resource "aws_instance" "bastion" {
     volume_size           = var.bastion_volume_size
     volume_type           = "standard"
   }
-
-  provisioner "file" {
-    source      = "scripts/bastion_config.bash"
-    destination = "/home/ec2-user/bastion_config.bash"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /home/ec2-user/bastion_config.bash",
-      "sudo /home/ec2-user/bastion_config.bash",
-    ]
-  }
-    connection {
-      type        = "ssh"
-      user        = var.ssh_user
-      private_key = file(var.private_ssh_key_path)
-      host        = self.public_ip
-    }
 }
+
 output "bastion_public_ip" {
   value = aws_instance.bastion.public_ip
 }

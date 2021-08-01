@@ -1,3 +1,12 @@
+//terraform state config
+variable "state_bucket" {
+  type = string
+  default = ""
+}
+variable "state_key" {
+  type = string
+  default = ""
+}
 variable "region" {
   type    = string
   default = "us-gov-west-1"

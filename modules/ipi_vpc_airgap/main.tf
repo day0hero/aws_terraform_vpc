@@ -10,6 +10,12 @@ resource "aws_vpc" "cluster_vpc" {
   }
 }
 
+locals {
+  vars = {
+    AWS_REGION = "${var.region}"
+  }
+}
+
 // Private Subnet Configuration
 resource "aws_subnet" "private_subnet" {
   count             = length(var.private_subnets) > 0 ? length(var.private_subnets) : 0
@@ -288,6 +294,13 @@ The registry is a short term bootstrap service meant to bootstrap the cluster an
 a more robust, enterprise-grade registry is in place.
 */
 
+
+// create keypair
+resource "aws_key_pair" "access_key_pair" {
+  key_name = var.ssh_key_name
+  public_key = file
+}
+
 // bastion instance configuration 
 resource "aws_security_group" "bastion_sg" {
   name   = "${var.cluster_name}-bastion-sg"
@@ -345,14 +358,16 @@ resource "aws_instance" "bastion" {
   }
 
   key_name               = var.ssh_key_name
+  user_data              = templatefile("$(path.module)/scripts/bastion.sh", local.vars)
+
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
   root_block_device {
     delete_on_termination = true
     volume_size           = var.bastion_volume_size
-    volume_type           = "standard"
+    volume_type           = "gp2"
   }
-
+/*
   provisioner "file" {
     source      = "${path.module}/scripts/bastion.sh"
     destination = "/home/ec2-user/bastion.sh"
@@ -369,6 +384,7 @@ resource "aws_instance" "bastion" {
     private_key = file(var.private_ssh_key_path)
     host        = self.public_ip
   }
+*/
 }
 
 /*
@@ -441,6 +457,8 @@ resource "aws_instance" "proxy" {
   }
 
   key_name               = var.ssh_key_name
+  user_data              = templatefile("$(path.module)/scripts/squid.sh", local.vars)
+
   vpc_security_group_ids = [aws_security_group.proxy_sg.id]
 
   root_block_device {
@@ -448,7 +466,7 @@ resource "aws_instance" "proxy" {
     volume_size           = var.proxy_volume_size
     volume_type           = "standard"
   }
-
+/*
   provisioner "file" {
     source      = "${path.module}/scripts/squid.sh"
     destination = "/home/ec2-user/squid.sh"
@@ -466,6 +484,7 @@ resource "aws_instance" "proxy" {
     private_key = file(var.private_ssh_key_path)
     host        = self.public_ip
   }
+*/
 }
 
 /*
@@ -521,6 +540,8 @@ resource "aws_instance" "registry" {
   }
 
   key_name               = var.ssh_key_name
+  user_data              = templatefile("$(path.module)/scripts/registry.sh", local.vars)
+
   vpc_security_group_ids = [aws_security_group.registry_sg.id]
 
   root_block_device {
