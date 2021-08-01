@@ -358,7 +358,7 @@ resource "aws_instance" "bastion" {
   }
 
   key_name               = var.ssh_key_name
-  user_data              = templatefile("$(path.module)/scripts/bastion.sh", local.vars)
+  user_data              = templatefile("${path.module}/scripts/bastion.sh", local.vars)
 
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
 
