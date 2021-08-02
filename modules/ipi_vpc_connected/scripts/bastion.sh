@@ -12,7 +12,7 @@ echo "Clean Up the download artifacts"
 rm -rf openshift-*
 
 echo "Install some core packages and run yum update"
-dnf install -y podman git vim tmux
+dnf install -y podman git vim tmux make golang
 dnf update -y --security
 
 echo "Create deployment scaffolding"
