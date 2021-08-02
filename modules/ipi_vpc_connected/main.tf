@@ -342,7 +342,3 @@ resource "aws_instance" "bastion" {
     volume_type           = "standard"
   }
 }
-
-output "vpc_id" {
-  value = aws_vpc.cluster_vpc.id 
-}
